@@ -8,8 +8,14 @@ class Settings {
   bool show1001Albums;
   bool showRollingStones;
 
-  Settings(this.contentVersion, this.sort, this.sortAscending, this.showListened,
-      this.show1001Albums, this.showRollingStones);
+  Settings(
+    this.contentVersion,
+    this.sort,
+    this.sortAscending,
+    this.showListened,
+    this.show1001Albums,
+    this.showRollingStones,
+  );
 
   @override
   String toString() {

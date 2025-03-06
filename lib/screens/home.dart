@@ -4,9 +4,7 @@ import 'package:albums/locator.dart';
 import 'package:albums/models/album.dart';
 import 'package:albums/models/settings.dart';
 import 'package:albums/models/sort.dart';
-import 'package:albums/screens/about.dart';
 import 'package:albums/screens/albums.dart';
-import 'package:albums/screens/loading.dart';
 import 'package:albums/service/storage.dart';
 import 'package:alphanum_comparator/alphanum_comparator.dart';
 import 'package:flutter/material.dart';
@@ -74,104 +72,54 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('1001 Albums'),
-      ),
-      body: isLoading || _displayedAlbums == null
-          ? const LoadingView()
-          : AlbumsView(
-              albums: _displayedAlbums!,
-              updateListened: updateListened,
-              updateRating: updateRating,
-              sorting: _settings.sort,
-            ),
-      drawer: _menuDrawer(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: filterMenu,
-        child: const Icon(Icons.filter_list),
-      ),
+    return AlbumsPage(
+      isLoading: isLoading,
+      albums: _displayedAlbums,
+      updateListened: updateListened,
+      updateRating: updateRating,
+      settings: _settings,
+      updateSettings: updateSettings,
     );
   }
 
-  void filterMenu() {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext bc) {
-        return Column(
-          children: <Widget>[
-            ListTile(
-              title: const Text('Sort albums by'),
-              trailing: DropdownButton<Sort>(
-                value: _settings.sort,
-                onChanged: (Sort? value) {
-                  if (value != null) {
-                    setState(() => _settings.sort = value);
-                    saveSetting((prefs) =>
-                        prefs.setString(PREFERENCE_SORT, value.toString()));
-                    Navigator.pop(context);
-                  }
-                },
-                items: Sort.values.map<DropdownMenuItem<Sort>>((Sort value) {
-                  return DropdownMenuItem<Sort>(
-                    value: value,
-                    child: Text(value.name),
-                  );
-                }).toList(),
-              ),
-            ),
-            ListTile(
-              title: const Text('Sort albums ascending'),
-              trailing: Switch(
-                value: _settings.sortAscending,
-                onChanged: (checked) {
-                  setState(() => _settings.sortAscending = checked);
-                  saveSetting(
-                      (prefs) => prefs.setBool(PREFERENCE_DIRECTION, checked));
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            ListTile(
-              title: const Text('Show listened'),
-              trailing: Switch(
-                value: _settings.showListened,
-                onChanged: (checked) {
-                  setState(() => _settings.showListened = checked);
-                  saveSetting(
-                      (prefs) => prefs.setBool(PREFERENCE_LISTENED, checked));
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            ListTile(
-              title: const Text('Show only in 1001 Albums'),
-              trailing: Switch(
-                value: _settings.show1001Albums,
-                onChanged: (checked) {
-                  setState(() => _settings.show1001Albums = checked);
-                  saveSetting(
-                      (prefs) => prefs.setBool(PREFERENCE_1001ALBUMS, checked));
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            ListTile(
-              title: const Text('Show only in Rolling Stone 500'),
-              trailing: Switch(
-                value: _settings.showRollingStones,
-                onChanged: (checked) {
-                  setState(() => _settings.showRollingStones = checked);
-                  saveSetting((prefs) =>
-                      prefs.setBool(PREFERENCE_ROLLING_STONES, checked));
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  void updateSettings({
+    Sort? sort,
+    bool? sortAscending,
+    bool? showListened,
+    bool? show1001Albums,
+    bool? showRollingStones,
+  }) {
+    setState(() {
+      if (sort != null) {
+        _settings.sort = sort;
+        saveSetting(
+            (prefs) => prefs.setString(PREFERENCE_SORT, sort.toString()));
+      }
+
+      if (sortAscending != null) {
+        _settings.sortAscending = sortAscending;
+        saveSetting(
+            (prefs) => prefs.setBool(PREFERENCE_DIRECTION, sortAscending));
+      }
+
+      if (showListened != null) {
+        _settings.showListened = showListened;
+        saveSetting(
+            (prefs) => prefs.setBool(PREFERENCE_LISTENED, showListened));
+      }
+
+      if (show1001Albums != null) {
+        _settings.show1001Albums = show1001Albums;
+        saveSetting(
+            (prefs) => prefs.setBool(PREFERENCE_1001ALBUMS, show1001Albums));
+      }
+
+      if (showRollingStones != null) {
+        _settings.showRollingStones = showRollingStones;
+        saveSetting((prefs) =>
+            prefs.setBool(PREFERENCE_ROLLING_STONES, showRollingStones));
+      }
+    });
   }
 
   void saveSetting(Function(SharedPreferences) save) async {
@@ -234,42 +182,6 @@ class _HomePageState extends State<HomePage> {
         break;
     }
     return _settings.sortAscending ? albums : albums.reversed;
-  }
-
-  Drawer _menuDrawer(BuildContext context) {
-    var headerChild = DrawerHeader(
-      decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-      child: Text(
-        '',
-        style: Theme.of(context)
-            .textTheme
-            .headlineSmall!
-            .copyWith(color: Colors.white),
-      ),
-    );
-
-    return Drawer(
-      child: ListView(
-        children: [
-          headerChild,
-          _menuItem(Icons.info, 'About', AboutPage.routeName),
-          const Divider(),
-        ],
-      ),
-    );
-  }
-
-  ListTile _menuItem(var icon, String title, String routeName) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: () {
-        // pop closes the drawer
-        Navigator.of(context).pop();
-        // navigate to the route
-        Navigator.of(context).pushNamed(routeName);
-      },
-    );
   }
 
   int _stringComparator(String a, String b) {

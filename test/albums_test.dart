@@ -1,4 +1,5 @@
 import 'package:albums/models/album.dart';
+import 'package:albums/models/settings.dart';
 import 'package:albums/models/sort.dart';
 import 'package:albums/screens/albums.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +17,13 @@ void main() {
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
-          body: AlbumsView(
+          body: AlbumsPage(
+            isLoading: false,
             albums: albums,
             updateListened: (Album album, bool listened) {},
             updateRating: (Album album, double rating) {},
-            sorting: Sort.artist,
+            settings: Settings(0, Sort.album, true, true, true, true),
+            updateSettings: updateSettings,
           ),
         ),
       ));
@@ -36,13 +39,15 @@ void main() {
 
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
-          body: AlbumsView(
+          body: AlbumsPage(
+            isLoading: false,
             albums: albums,
             updateListened: (Album album, bool listened) {
               listenedClicked = true;
             },
             updateRating: (Album album, double rating) {},
-            sorting: Sort.artist,
+            settings: Settings(0, Sort.artist, true, true, true, true),
+            updateSettings: updateSettings,
           ),
         ),
       ));
@@ -58,6 +63,14 @@ void main() {
     });
   });
 }
+
+void updateSettings({
+  Sort? sort,
+  bool? sortAscending,
+  bool? showListened,
+  bool? show1001Albums,
+  bool? showRollingStones,
+}) {}
 
 Album anAlbum({
   String artist = 'U2',
